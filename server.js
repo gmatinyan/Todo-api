@@ -3,6 +3,7 @@ var bodyParser = require('body-parser');
 var _ = require('underscore');
 var db = require('./db.js');
 var bcrypt = require('bcryptjs');
+var middleware = require('./middleware.js')(db);
 
 var app = express();
 var PORT = process.env.PORT || 3000;
@@ -15,7 +16,7 @@ app.get('/', function(req, res) {
 	res.send('Todo API Root');
 });
 
-app.get('/todos', function (req, res) {
+app.get('/todos', middleware.requireAutentication, function (req, res) {
 	var query = req.query;
 	var where = {};
 
@@ -35,26 +36,10 @@ app.get('/todos', function (req, res) {
 		res.json(todos);
 	}, function (e) {
 		res.status(500).send(); 
-	})
-	// var filteredTodos = todos;
-
-	// if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
-	// 	filteredTodos = _.where(filteredTodos, {completed: true}); 
-	// } else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
-	// 	filteredTodos = _.where(filteredTodos, {completed: false})
-	// }
-
-	// if (queryParams.hasOwnProperty('q') && queryParams.q.length > 0) {
-	// 	filteredTodos = _.filter(filteredTodos, function(todo) {
-	// 		return todo.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) > -1;
-	// 	})
-	// }
-
-	// res.json(filteredTodos);
-	pick
+	});	
 });
 
-app.get('/todos/:id', function (req, res) {
+app.get('/todos/:id', middleware.requireAutentication, function (req, res) {
 	var todoID = parseInt(req.params.id, 10)
 
 	db.todo.findById(todoID).then(function(todo) {
@@ -66,28 +51,10 @@ app.get('/todos/:id', function (req, res) {
 	}, function (e) {
 		res.status(500).senc()
 	}); 
-
-	//var matchedTodo = _.findWhere(todos, {id: todoID})
-
-	//var matchedTodo;
-
-	//todos.forEach (function (todo) {
-	//	if (todoID === todo.id) {
-	//		matchedTodo = todo;	
-	//	}
-	//});
-
-	// if (matchedTodo) {
-	// 	res.json(matchedTodo);
-	// } else {
-	// 	res.status(404).send();
-	// }
-	
-	//res.send('Asking for todo with id of ' + req.params.id)
 });
-//get.todos/:id
 
-app.post('/todos', function (req, res) {
+
+app.post('/todos', middleware.requireAutentication, function (req, res) {
 	var body = _.pick(req.body, 'description', 'completed');
 
 	db.todo.create(body).then(function(todo) {
@@ -95,23 +62,9 @@ app.post('/todos', function (req, res) {
 	}, function(e) {
 		res.status(400).json(e);
 	});
-
-	// if(!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
-	// 	return res.status(400).send(); 
-	// }
-
-	// body.description = body.description.trim();
-
-	// body.id = todoNextId++;
-
-	// todos.push(body);
-
-	// //console.log('description: ' + body.description);
-
-	// res.json(body);
 });
 
-app.delete('/todos/:id', function(req, res) {	
+app.delete('/todos/:id', middleware.requireAutentication, function(req, res) {	
 	var todoID = parseInt(req.params.id, 10);
 
 	db.todo.destroy({
@@ -125,34 +78,18 @@ app.delete('/todos/:id', function(req, res) {
 			});
 		} else {
 			res.status(204).send();
-
-
-
 		}
 	}, function () {
 		res.status(500).send();
 	});
-	// var matchedTodo = _.findWhere(todos, {id: todoID});
-
-	// if (!matchedTodo) {
-	// 	res.status(404).json({"error" : "no todo found with that id"});
-	// 	//res.status(404).send();
-	// } else {
-	// 	todos = _.without(todos, matchedTodo);
-	// 	res.json(matchedTodo);
-	// }
 
 });
 
-app.put('/todos/:id', function(req, res) {
+app.put('/todos/:id', middleware.requireAutentication, function(req, res) {
 	var todoID = parseInt(req.params.id, 10);
 	//var matchedTodo = _.findWhere(todos, {id: todoID});
 	var body = _.pick(req.body, 'description', 'completed');
 	var attributes = {};
-
-	// if(!matchedTodo) {
-	// 	return res.status(404).send();
-	// }
 
 	if(body.hasOwnProperty('completed')) {
 		attributes.completed = body.completed;
@@ -186,8 +123,6 @@ app.post('/users', function (req, res) {
 		res.status(400).json(e);
 	});
 });
-
-//POST/users/login
 
 app.post('/users/login', function(req, res) {
 	var body = _.pick(req.body, 'email', 'password');
