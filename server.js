@@ -37,7 +37,7 @@ app.get('/todos', middleware.requireAutentication, function (req, res) {
 	db.todo.findAll({where: where}).then(function (todos) {
 		res.json(todos);
 	}, function (e) {
-		res.status(500).send(); 
+		res.status(500).send(e.message); 
 	});	
 });
 
@@ -47,7 +47,7 @@ app.get('/todos/:id', middleware.requireAutentication, function (req, res) {
 	db.todo.findOne({
 		where: {
 			id: todoID,
-			userId: req.user.get('id'),
+			userId: req.user.get('id')
 		}
 	}).then(function(todo) {
 		if (!!todo) {

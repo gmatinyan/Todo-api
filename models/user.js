@@ -36,7 +36,7 @@ module.exports = function (sequelize, DataTypes) {
 		}
 	}, {
 		hooks: {
-			befoteValidation: function (user, options) {
+			beforeValidation: function (user, options) {
 				if (typeof user.email === 'string') {
 					user.email = user.email.toLowerCase();
 				}
