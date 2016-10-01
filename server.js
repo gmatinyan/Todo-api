@@ -19,7 +19,7 @@ app.get('/', function(req, res) {
 app.get('/todos', middleware.requireAutentication, function (req, res) {
 	var query = req.query;
 	var where = {
-		UserId: req.user.get('id')
+		userId: req.user.get('id')
 	};
 
 	if (query.hasOwnProperty('completed') && query.completed ==='true') {
